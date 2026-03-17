@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sprint AI â Tereos Aalst</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --brand: #1a56db;
+    --brand-light: #e8eefb;
+    --brand-dark: #0f3595;
+    --bg: #f8f9fb;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --text-muted: #6b7280;
+    --text-light: #9ca3af;
+    --success: #059669;
+    --warning: #d97706;
+    --danger: #dc2626;
+    --sidebar-w: 280px;
+    --sources-w: 300px;
+  }
+  html, body { height: 100%; font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  body { display: flex; overflow: hidden; }
+
+  /* âââ SIDEBAR âââ */
+  .sidebar {
+    width: var(--sidebar-w); min-width: var(--sidebar-w);
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 0;
+  }
+  .sidebar-header {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+  .logo-icon {
+    width: 36px; height: 36px; background: var(--brand); border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 20px; height: 20px; }
+  .logo-text { font-size: 18px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .logo-sub { font-size: 11px; color: var(--text-muted); margin-left: 46px; margin-top: -2px; letter-spacing: 0.3px; text-transform: uppercase; font-weight: 500; }
+
+  .plant-badge {
+    margin: 16px 20px 0; padding: 10px 12px;
+    background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status-dot { width: 8px; height: 8px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .plant-badge-text { font-size: 12px; font-weight: 500; color: #166534; }
+  .plant-badge-sub { font-size: 11px; color: #16a34a; }
+
+  .scenarios-label { padding: 20px 20px 8px; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); font-weight: 600; }
+
+  .scenario-list { flex: 1; overflow-y: auto; padding: 0 12px; }
+  .scenario-btn {
+    width: 100%; text-align: left; background: none; border: none;
+    padding: 12px 12px; border-radius: 10px; cursor: pointer;
+    display: flex; align-items: flex-start; gap: 12px;
+    transition: all 0.15s ease; margin-bottom: 2px; font-family: inherit;
+  }
+  .scenario-btn:hover { background: var(--bg); }
+  .scenario-btn.active { background: var(--brand-light); }
+  .scenario-icon {
+    width: 36px; height: 36px; min-width: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-top: 2px;
+  }
+  .scenario-btn.active .scenario-icon { opacity: 1; }
+  .sc-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
+  .sc-desc { font-size: 11px; color: var(--text-muted); line-height: 1.4; margin-top: 2px; }
+
+  .sidebar-footer {
+    padding: 16px 20px; border-top: 1px solid var(--border);
+    font-size: 11px; color: var(--text-light); text-align: center;
+  }
+  .sidebar-footer span { color: var(--brand); font-weight: 600; }
+
+  /* âââ MAIN AREA âââ */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  .top-bar {
+    height: 56px; background: var(--surface); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+  }
+  .top-bar-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .top-bar-right { display: flex; align-items: center; gap: 16px; }
+  .top-bar-right .tag {
+    font-size: 11px; padding: 4px 10px; border-radius: 20px;
+    font-weight: 500;
+  }
+  .tag-live { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+  .tag-model { background: #f0f4ff; color: #3b5bdb; border: 1px solid #c8d6f5; }
+  .user-pill {
+    display: flex; align-items: center; gap: 8px; padding: 4px 12px 4px 4px;
+    background: var(--bg); border-radius: 20px; border: 1px solid var(--border);
+  }
+  .user-pill-avatar {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--brand);
+    color: white; display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .user-pill-name { font-size: 12px; font-weight: 500; color: var(--text); }
+  .user-pill-role { font-size: 10px; color: var(--text-muted); }
+
+  /* âââ CHAT âââ */
+  .chat-area {
+    flex: 1; overflow-y: auto; padding: 32px 40px;
+    display: flex; flex-direction: column; gap: 20px;
+    scroll-behavior: smooth;
+  }
+
+  .msg { display: flex; gap: 12px; max-width: 85%; animation: fadeUp 0.35s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+
+  .msg-avatar {
+    width: 32px; height: 32px; min-width: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 600; margin-top: 2px;
+  }
+  .msg.user .msg-avatar { background: #f3f4f6; color: var(--text-muted); }
+  .msg.ai .msg-avatar { background: var(--brand); color: white; }
+
+  .msg-bubble {
+    padding: 14px 18px; border-radius: 14px; font-size: 14px;
+    line-height: 1.65; position: relative;
+  }
+  .msg.user .msg-bubble {
+    background: var(--brand); color: white; border-bottom-right-radius: 4px;
+  }
+  .msg.ai .msg-bubble {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .msg-bubble h4 { font-size: 13px; font-weight: 700; margin: 12px 0 4px; color: var(--brand-dark); text-transform: uppercase; letter-spacing: 0.3px; }
+  .msg-bubble h4:first-child { margin-top: 0; }
+  .msg-bubble ul { margin: 4px 0 8px 16px; padding: 0; }
+  .msg-bubble li { margin-bottom: 4px; }
+  .msg-bubble .highlight { background: #fef3c7; padding: 1px 5px; border-radius: 3px; font-weight: 500; }
+  .msg-bubble .contact-card {
+    margin: 8px 0; padding: 8px 12px; background: #f8f9fb; border-radius: 8px;
+    border-left: 3px solid var(--brand); font-size: 13px;
+  }
+  .msg-bubble .contact-card strong { color: var(--brand-dark); }
+  .msg-bubble .warning-box {
+    margin: 8px 0; padding: 10px 12px; background: #fef2f2; border-radius: 8px;
+    border-left: 3px solid var(--danger); font-size: 13px; color: #991b1b;
+  }
+  .msg-bubble .success-box {
+    margin: 8px 0; padding: 10px 12px; background: #f0fdf4; border-radius: 8px;
+    border-left: 3px solid var(--success); font-size: 13px; color: #166534;
+  }
+
+  .msg-time { font-size: 10px; color: var(--text-light); margin-top: 6px; padding: 0 4px; }
+  .msg.user .msg-time { text-align: right; }
+
+  .typing-indicator {
+    display: flex; align-items: center; gap: 12px; padding: 0 4px;
+    animation: fadeUp 0.3s ease;
+  }
+  .typing-indicator .msg-avatar { background: var(--brand); color: white; }
+  .typing-dots { display: flex; gap: 4px; padding: 12px 18px; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; border-bottom-left-radius: 4px; }
+  .typing-dots span {
+    width: 7px; height: 7px; background: var(--text-light); border-radius: 50%;
+    animation: bounce 1.4s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-6px); } }
+
+  .chat-input-bar {
+    padding: 16px 24px; border-top: 1px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .chat-input {
+    flex: 1; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px;
+    font-size: 14px; font-family: inherit; background: var(--bg);
+    outline: none; transition: border-color 0.15s;
+  }
+  .chat-input:focus { border-color: var(--brand); }
+  .chat-input::placeholder { color: var(--text-light); }
+
+  /* âââ SOURCES PANEL âââ */
+  .sources-panel {
+    width: var(--sources-w); min-width: var(--sources-w);
+    background: var(--surface); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .sources-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sources-header svg { color: var(--brand); }
+  .sources-header h3 { font-size: 13px; font-weight: 600; }
+  .sources-count { font-size: 11px; background: var(--brand-light); color: var(--brand); padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-left: auto; }
+
+  .sources-list { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+
+  .source-card {
+    padding: 12px; border: 1px solid var(--border); border-radius: 10px;
+    transition: all 0.15s; cursor: default; animation: fadeUp 0.3s ease;
+  }
+  .source-card:hover { border-color: var(--brand); background: #fafbff; }
+  .source-type {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;
+    margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
+  }
+  .source-type .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .source-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .source-detail { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+  .source-confidence {
+    margin-top: 6px; font-size: 10px; font-weight: 600; display: flex; align-items: center; gap: 4px;
+  }
+  .conf-bar { height: 3px; width: 60px; background: #e5e7eb; border-radius: 2px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 2px; }
+
+  .sources-footer {
+    padding: 12px 16px; border-top: 1px solid var(--border); font-size: 11px;
+    color: var(--text-light); text-align: center; line-height: 1.5;
+  }
+  .sources-footer strong { color: var(--text-muted); }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+</style>
+</head>
+<body>
+
+<!-- âââ SIDEBAR âââ -->
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-row">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div class="logo-text">Sprint AI</div>
+    </div>
+    <div class="logo-sub">Knowledge Agent</div>
+  </div>
+
+  <div class="plant-badge">
+    <div class="status-dot"></div>
+    <div>
+      <div class="plant-badge-text">Tereos Aalst â Live</div>
+      <div class="plant-badge-sub">Sugar Refinery Â· Belgium</div>
+    </div>
+  </div>
+
+  <div class="scenarios-label">Demo Scenarios</div>
+  <div class="scenario-list" id="scenarioList"></div>
+
+  <div class="sidebar-footer">
+    Powered by <span>Sprint AI</span> Â· v2.4.1<br/>
+    Last sync: 17 Mar 2026, 08:41 CET
+  </div>
+</aside>
+
+<!-- âââ MAIN âââ -->
+<div class="main">
+  <div class="top-bar">
+    <div class="top-bar-title" id="topBarTitle">Machine Breakdown â Line 3 Conveyor</div>
+    <div class="top-bar-right">
+      <div class="tag tag-live">â Live Instance</div>
+      <div class="tag tag-model">Sprint AI Core v2.4</div>
+      <div class="user-pill">
+        <div class="user-pill-avatar">LP</div>
+        <div>
+          <div class="user-pill-name">Leo Paternot</div>
+          <div class="user-pill-role">COO Â· Tereos Aalst</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="chat-area" id="chatArea"></div>
+  <div class="chat-input-bar">
+    <input class="chat-input" placeholder="Ask Sprint AI about Tereos Aalst procedures, protocols, contacts..." readonly />
+  </div>
+</div>
+
+<!-- âââ SOURCES âââ -->
+<aside class="sources-panel">
+  <div class="sources-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <h3>Sources Referenced</h3>
+    <div class="sources-count" id="sourcesCount">0</div>
+  </div>
+  <div class="sources-list" id="sourcesList"></div>
+  <div class="sources-footer">
+    All responses grounded in <strong>verified Tereos Aalst documentation</strong>. No hallucinated content.
+  </div>
+</aside>
+
+<script>
+// âââ DATA âââ
+const scenarios = [
+  {
+    id: 'breakdown',
+    icon: 'âï¸',
+    iconBg: '#fef2f2',
+    title: 'Machine Breakdown',
+    desc: 'Line 3 conveyor failure response',
+    topBar: 'Machine Breakdown â Line 3 Conveyor',
+    messages: [
+      {
+        role: 'user',
+        text: 'Line 3 conveyor is making abnormal noise and has stopped. What do I do?',
+        time: '09:14'
+      },
+      {
+        role: 'ai',
+        text: `<h4>â ï¸ Immediate Safety Actions</h4>
+<div class="warning-box">CRITICAL: Do NOT attempt to restart the conveyor. Activate LOTO (Lock-Out/Tag-Out) procedure per Tereos SOP-M-042 before any physical inspection.</div>
+<ul>
+<li>Press the <span class="highlight">E-Stop (red mushroom button)</span> at Panel 3C if not already triggered</li>
+<li>Establish a 2-metre safety perimeter around the Line 3 BMA conveyor belt section</li>
+<li>Verify no beet residue is jamming the discharge chute at transfer point TP-3B</li>
+</ul>
+
+<h4>ð§ Diagnostic Procedure â Conveyor Belt C3-BMA-220</h4>
+<ul>
+<li>Check belt alignment sensors (SA-3.1 through SA-3.4) on the operator HMI â deviation >12mm triggers auto-stop</li>
+<li>Inspect the main drive motor (Siemens 1LE1 series, 75kW) for bearing temperature â threshold is 85Â°C per maintenance spec</li>
+<li>Examine idler rollers at sections R14âR22 (known wear zone flagged in last PM cycle, 28 Feb 2026)</li>
+<li>Check gearbox oil level on the Flender CAVEX unit â dipstick access on east side</li>
+</ul>
+
+<h4>ð Escalation Contacts</h4>
+<div class="contact-card"><strong>Shift Maintenance Lead:</strong> Pieter De Smet â ext. 4401 / +32 473 XX XX 12</div>
+<div class="contact-card"><strong>BMA Equipment Specialist:</strong> Tereos Maintenance Desk â ext. 4450</div>
+<div class="contact-card"><strong>Production Supervisor:</strong> Koen Jacobs â ext. 4102</div>
+
+<h4>ð Expected Resolution Path</h4>
+<ul>
+<li>If bearing failure confirmed â Spare unit available in Warehouse B, Rack M-14, Slot 3 (last inventory check: 12 Mar 2026, qty: 2)</li>
+<li>Estimated repair time for bearing swap: 2.5â3 hours per historical WO data</li>
+<li>If belt misalignment only â Re-tension and track per BMA manual Section 7.3.2, est. 45 min</li>
+</ul>
+<div class="success-box">Line 3 downtime must be logged in SAP PM module (notification type M2). Auto-notify has been sent to Koen Jacobs.</div>`,
+        time: '09:14'
+      }
+    ],
+    sources: [
+      { type: 'Maintenance Manual', color: '#3b82f6', title: 'BMA Conveyor Belt C3 â Service Manual', detail: 'Section 7.3: Belt Tracking & Alignment, pp. 47â52', confidence: 97 },
+      { type: 'SOP', color: '#8b5cf6', title: 'SOP-M-042: Lock-Out/Tag-Out Procedure', detail: 'Rev 3.2, Approved: Jan 2026 Â· Tereos Aalst Safety Dept', confidence: 99 },
+      { type: 'Work Order History', color: '#f59e0b', title: 'WO-2026-0284: Line 3 PM Inspection', detail: '28 Feb 2026 â Idler roller wear noted at R14âR22', confidence: 94 },
+      { type: 'SAP Inventory', color: '#10b981', title: 'Spare Parts Register â Warehouse B', detail: 'Bearing unit 6316-2Z: 2 units in stock, Rack M-14', confidence: 100 },
+      { type: 'Contact Directory', color: '#ec4899', title: 'Tereos Aalst Staff Directory', detail: 'Maintenance & Production shift contacts, updated Mar 2026', confidence: 100 }
+    ]
+  },
+  {
+    id: 'supply',
+    icon: 'ð',
+    iconBg: '#fefce8',
+    title: 'Supply Chain Disruption',
+    desc: 'Beet delivery delay contingency',
+    topBar: 'Supply Chain Disruption â Beet Delivery Delay',
+    messages: [
+      {
+        role: 'user',
+        text: 'Beet delivery from supplier delayed by 48 hours. What\'s the contingency protocol?',
+        time: '11:32'
+      },
+      {
+        role: 'ai',
+        text: `<h4>ð Current Inventory Assessment</h4>
+<ul>
+<li>Beet yard stock (as of 07:00 this morning): <span class="highlight">~4,200 tonnes</span></li>
+<li>Current processing rate: 8,500 tonnes/day (Campaign pace)</li>
+<li>Estimated runway without resupply: <span class="highlight">~11.8 hours</span> at full throughput</li>
+</ul>
+<div class="warning-box">At current rates, beet supply will be critically low by 19:00 today. Immediate action required per Contingency Plan CP-SC-008.</div>
+
+<h4>ð Contingency Protocol â CP-SC-008</h4>
+<ul>
+<li><strong>Step 1 â Reduce throughput:</strong> Scale back to 6,000 t/day processing rate to extend runway to ~16.8 hours. Adjust diffuser feed rate via SCADA setpoint SP-DF-01.</li>
+<li><strong>Step 2 â Activate alternate suppliers:</strong> Contact the following approved suppliers on the Aalst rotation list:</li>
+</ul>
+<div class="contact-card"><strong>CoÃ¶peratie Cosun (Tienen depot):</strong> Logistics â +32 16 XX XX 45 Â· Lead time: 6â8 hours Â· Capacity: up to 2,000 t</div>
+<div class="contact-card"><strong>ISCAL Sugar (Fontenoy):</strong> Raw Materials Desk â +32 69 XX XX 30 Â· Lead time: 10â12 hours Â· Capacity: up to 1,500 t</div>
+<div class="contact-card"><strong>Raffinerie Tirlemontoise (backup):</strong> +32 16 XX XX 88 Â· Emergency allocation only</div>
+<ul>
+<li><strong>Step 3 â Logistics coordination:</strong> Confirm transport availability with Transports Vanheede (+32 9 XXX XX 10) â current contract allows 3 additional truck rotations per day on 4-hour notice</li>
+<li><strong>Step 4 â Production adjustment:</strong> If gap exceeds 24 hours, initiate partial shutdown sequence per SOP-P-015 (crystallization lines first, then extraction)</li>
+</ul>
+
+<h4>ð£ Notification Requirements</h4>
+<ul>
+<li>Alert Supply Chain Manager: Marc Willems â ext. 4200 / +32 475 XX XX 90</li>
+<li>Log disruption in SAP MM module under material group BEET-RAW</li>
+<li>If >24h disruption: notify Group Supply Chain (Paris HQ) per escalation matrix EM-SC-3</li>
+</ul>
+<div class="success-box">Sprint AI has pre-drafted a supplier activation email for your review. Say "show draft" to see it.</div>`,
+        time: '11:32'
+      }
+    ],
+    sources: [
+      { type: 'Contingency Plan', color: '#8b5cf6', title: 'CP-SC-008: Raw Material Supply Disruption', detail: 'Rev 2.1, Updated Oct 2025 â Supply Chain Dept', confidence: 98 },
+      { type: 'Inventory System', color: '#10b981', title: 'SAP MM â Beet Yard Real-Time Stock', detail: 'Live reading: 4,217t as of 07:00 CET, 17 Mar 2026', confidence: 100 },
+      { type: 'Supplier Database', color: '#f59e0b', title: 'Approved Supplier Register â Campaign 2025/26', detail: 'Aalst rotation list: 6 approved beet suppliers, 3 transport contractors', confidence: 96 },
+      { type: 'SOP', color: '#3b82f6', title: 'SOP-P-015: Partial Shutdown Sequence', detail: 'Section 3: Campaign interruption procedures', confidence: 95 },
+      { type: 'Contract', color: '#ec4899', title: 'Transport Contract TC-2025-VH-03', detail: 'Vanheede NV â surge capacity clause, 3 extra rotations/day', confidence: 99 }
+    ]
+  },
+  {
+    id: 'injury',
+    icon: 'ð¨',
+    iconBg: '#fef2f2',
+    title: 'Operator Injury',
+    desc: 'Emergency protocol at Station B2',
+    topBar: 'Operator Injury â Crystallization Station B2',
+    messages: [
+      {
+        role: 'user',
+        text: 'Operator injured at crystallization station B2. What are the immediate steps?',
+        time: '14:07'
+      },
+      {
+        role: 'ai',
+        text: `<div class="warning-box">ð¨ EMERGENCY PROTOCOL EP-HS-001 ACTIVATED â All actions below are time-critical. Timer starts NOW.</div>
+
+<h4>1. Immediate Response (0â5 minutes)</h4>
+<ul>
+<li><strong>Secure the area:</strong> Hit E-Stop on crystallization vacuum pan B2 (VKT-B2) â red button on local panel CP-B2</li>
+<li><strong>Call emergency services:</strong> Dial <span class="highlight">112</span> (external) or <span class="highlight">ext. 9-112</span> (internal) â state: "Industrial injury, Tereos Aalst, Akelei 2, 9300 Aalst â Crystallization Hall B, Station B2"</li>
+<li><strong>Alert on-site first aiders:</strong> Call ext. <span class="highlight">4999</span> (First Aid team radio channel) â AED locations: entrance Hall B (cabinet #7) and control room CR-2</li>
+<li><strong>Do NOT move the injured person</strong> unless there is immediate danger (hot syrup exposure, chemical contact)</li>
+</ul>
+
+<h4>2. Scene Management (5â15 minutes)</h4>
+<ul>
+<li>Designate someone to meet the ambulance at <span class="highlight">Gate 2 (Industrielaan entrance)</span> â fastest route to Hall B</li>
+<li>Clear non-essential personnel from crystallization zone B</li>
+<li>If hot massecuite exposure: flush affected area with lukewarm water for minimum 20 minutes (safety shower SS-B2-04, west wall)</li>
+<li>Preserve the scene â do not clean up or move equipment until investigation</li>
+</ul>
+
+<h4>3. Notification Chain</h4>
+<div class="contact-card"><strong>HSE Manager:</strong> Lies Van Damme â ext. 4300 / +32 479 XX XX 55 (must be notified within 15 min)</div>
+<div class="contact-card"><strong>Plant Director:</strong> Stefan Bogaert â ext. 4001 / +32 476 XX XX 01</div>
+<div class="contact-card"><strong>Shift Supervisor on duty:</strong> See daily roster board, Control Room 1</div>
+<div class="contact-card"><strong>Tereos Group HSE (Paris):</strong> +33 1 XX XX XX 80 (required within 1 hour for any lost-time injury)</div>
+
+<h4>4. Regulatory Reporting</h4>
+<ul>
+<li><strong>Belgian law requirement:</strong> Notify the <span class="highlight">External Service for Prevention (Mensura)</span> within 24 hours for any workplace injury causing absence</li>
+<li>Complete internal incident report form IR-001 in SAP EHS module within 4 hours</li>
+<li>If serious injury: Federal Agency for Occupational Risks (Fedris) must be notified â HSE Manager handles this</li>
+<li>Preserve CCTV footage from cameras CAM-B2-01 and CAM-B2-02 (auto-retention is 72h â flag for extended hold)</li>
+</ul>
+
+<div class="success-box">EP-HS-001 checklist has been initiated. Sprint AI will prompt you for status updates every 15 minutes until the incident is closed.</div>`,
+        time: '14:07'
+      }
+    ],
+    sources: [
+      { type: 'Emergency Protocol', color: '#dc2626', title: 'EP-HS-001: Workplace Injury Response', detail: 'Rev 4.0, Jan 2026 â HSE Department, mandatory annual review', confidence: 100 },
+      { type: 'Safety Map', color: '#f59e0b', title: 'Tereos Aalst Emergency Equipment Map', detail: 'AED, safety showers, E-Stops, first aid kits â Hall B layout', confidence: 98 },
+      { type: 'Legal Compliance', color: '#8b5cf6', title: 'Belgian Workplace Accident Reporting Guide', detail: 'Fedris / Mensura notification requirements, updated 2025', confidence: 96 },
+      { type: 'Contact Directory', color: '#ec4899', title: 'Emergency Contact List â Tereos Aalst', detail: 'HSE, Medical, Management, External Services', confidence: 100 },
+      { type: 'Site Plan', color: '#3b82f6', title: 'Aalst Site Access Map â Emergency Routes', detail: 'Gate 2 ambulance route, Hall B access points', confidence: 97 }
+    ]
+  },
+  {
+    id: 'knowledge',
+    icon: 'ð§ ',
+    iconBg: '#f0fdf4',
+    title: 'Retiring Expert',
+    desc: 'Knowledge capture plan for Jan Vermeersch',
+    topBar: 'Knowledge Transfer â Jan Vermeersch Retirement',
+    messages: [
+      {
+        role: 'user',
+        text: 'Jan Vermeersch retires in 6 weeks. How do we capture his knowledge before he leaves?',
+        time: '10:45'
+      },
+      {
+        role: 'ai',
+        text: `<h4>ð¤ Employee Profile â Jan Vermeersch</h4>
+<ul>
+<li><strong>Role:</strong> Senior Process Engineer â Sugar Extraction & Purification</li>
+<li><strong>Tenure:</strong> 34 years at Tereos Aalst (joined 1992, originally Aalst Suikerraffinaderij)</li>
+<li><strong>Key expertise areas:</strong> Diffuser optimization, juice purification chemistry, carbonatation troubleshooting, campaign start-up sequencing</li>
+<li><strong>Retirement date:</strong> <span class="highlight">28 April 2026</span> â 6 weeks from today</li>
+<li><strong>Identified successor:</strong> Elke Martens (Process Engineer, 4 years tenure) per succession plan SP-2025-ENG-03</li>
+</ul>
+
+<h4>ð Structured Knowledge Capture Plan</h4>
+<p>Based on Tereos knowledge management framework KM-POL-002 and Jan's specific expertise areas, here is a 6-week capture plan:</p>
+
+<h4>Weeks 1â2: Critical Process Documentation</h4>
+<ul>
+<li><strong>Diffuser optimization:</strong> Record Jan's tuning methodology for the DDS diffuser â his settings consistently achieve 98.2% extraction rate vs. the 96.5% standard. Schedule 3Ã two-hour sessions with Elke Martens.</li>
+<li><strong>Campaign start-up:</strong> Jan leads the annual start-up sequence (Sept). Film a narrated walkthrough of his pre-start checklist â the written SOP-P-001 doesn't capture his 15+ deviation scenarios.</li>
+<li><strong>Carbonatation troubleshooting:</strong> Jan's mental model for diagnosing first/second carbonatation issues. Use structured interview format (template KM-INT-01).</li>
+</ul>
+
+<h4>Weeks 3â4: Tacit Knowledge & Relationships</h4>
+<ul>
+<li><strong>Supplier relationships:</strong> Jan is the primary technical contact for BMA (diffuser OEM) and Putsch (filter presses). Facilitate introduction meetings with Elke + key BMA/Putsch engineers.</li>
+<li><strong>Troubleshooting "war stories":</strong> Schedule 2Ã informal sessions where Jan recounts the 5â10 most critical incidents he resolved and what he learned. Record and transcribe for the knowledge base.</li>
+<li><strong>"Sense-making" walk:</strong> Jan walks the extraction floor with Elke, narrating what he looks for, listens for, and smells â the sensory cues that don't appear in any manual.</li>
+</ul>
+
+<h4>Weeks 5â6: Validation & Handover</h4>
+<ul>
+<li>Elke shadows Jan for one full shift cycle (3-shift rotation) as primary operator with Jan observing</li>
+<li>Review all captured documentation together â Jan validates accuracy</li>
+<li>Upload all materials to Sprint AI knowledge base (this system) with Jan tagged as source authority</li>
+<li>Final handover meeting with Plant Director Stefan Bogaert to confirm no gaps</li>
+</ul>
+
+<div class="contact-card"><strong>HR Lead for transition:</strong> Annelies Peeters â ext. 4500 / +32 471 XX XX 33</div>
+<div class="contact-card"><strong>Knowledge Management:</strong> Sprint AI admin team â km-support@sprintai.io</div>
+
+<div class="success-box">Sprint AI can auto-generate the structured interview templates and session schedules for this plan. Say "generate capture schedule" to proceed.</div>`,
+        time: '10:46'
+      }
+    ],
+    sources: [
+      { type: 'HR System', color: '#8b5cf6', title: 'Employee Record â Jan Vermeersch (EMP-1992-047)', detail: 'Role history, expertise tags, retirement date confirmation', confidence: 100 },
+      { type: 'Policy', color: '#3b82f6', title: 'KM-POL-002: Knowledge Management Framework', detail: 'Tereos Group policy for critical knowledge retention', confidence: 97 },
+      { type: 'Succession Plan', color: '#10b981', title: 'SP-2025-ENG-03: Process Engineering Succession', detail: 'Elke Martens identified as successor, gap analysis completed', confidence: 98 },
+      { type: 'Performance Data', color: '#f59e0b', title: 'Extraction KPI Dashboard â 2023â2026', detail: 'Jan\'s shifts avg 98.2% extraction vs 96.5% plant mean', confidence: 95 },
+      { type: 'Template', color: '#ec4899', title: 'KM-INT-01: Structured Knowledge Interview Guide', detail: 'Standard template for expert knowledge elicitation sessions', confidence: 100 }
+    ]
+  }
+];
+
+// âââ RENDER âââ
+const scenarioList = document.getElementById('scenarioList');
+const chatArea = document.getElementById('chatArea');
+const sourcesList = document.getElementById('sourcesList');
+const sourcesCount = document.getElementById('sourcesCount');
+const topBarTitle = document.getElementById('topBarTitle');
+
+let activeScenario = null;
+
+function renderScenarioButtons() {
+  scenarioList.innerHTML = '';
+  scenarios.forEach(sc => {
+    const btn = document.createElement('button');
+    btn.className = 'scenario-btn' + (activeScenario === sc.id ? ' active' : '');
+    btn.innerHTML = `
+      <div class="scenario-icon" style="background:${sc.iconBg}">${sc.icon}</div>
+      <div>
+        <div class="sc-title">${sc.title}</div>
+        <div class="sc-desc">${sc.desc}</div>
+      </div>
+    `;
+    btn.onclick = () => loadScenario(sc.id);
+    scenarioList.appendChild(btn);
+  });
+}
+
+function loadScenario(id) {
+  const sc = scenarios.find(s => s.id === id);
+  if (!sc) return;
+  activeScenario = id;
+  topBarTitle.textContent = sc.topBar;
+  renderScenarioButtons();
+
+  // Clear and animate chat
+  chatArea.innerHTML = '';
+  sourcesList.innerHTML = '';
+  sourcesCount.textContent = '0';
+
+  // Show user message immediately
+  const userMsg = sc.messages[0];
+  appendMessage(userMsg);
+
+  // Show typing indicator, then AI response
+  setTimeout(() => {
+    showTyping();
+    setTimeout(() => {
+      removeTyping();
+      const aiMsg = sc.messages[1];
+      appendMessage(aiMsg);
+      renderSources(sc.sources);
+    }, 1200);
+  }, 600);
+}
+
+function appendMessage(msg) {
+  const div = document.createElement('div');
+  div.className = 'msg ' + msg.role;
+  const avatarContent = msg.role === 'user' ? 'LP' : 'â¡';
+  div.innerHTML = `
+    <div class="msg-avatar">${avatarContent}</div>
+    <div>
+      <div class="msg-bubble">${msg.role === 'user' ? escapeHtml(msg.text) : msg.text}</div>
+      <div class="msg-time">${msg.time}</div>
+    </div>
+  `;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function showTyping() {
+  const div = document.createElement('div');
+  div.className = 'typing-indicator';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="msg-avatar" style="background:var(--brand);color:white">â¡</div>
+    <div class="typing-dots"><span></span><span></span><span></span></div>
+  `;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function renderSources(sources) {
+  sourcesList.innerHTML = '';
+  sourcesCount.textContent = sources.length;
+  sources.forEach((src, i) => {
+    setTimeout(() => {
+      const card = document.createElement('div');
+      card.className = 'source-card';
+      const confColor = src.confidence >= 97 ? '#059669' : src.confidence >= 95 ? '#3b82f6' : '#f59e0b';
+      card.innerHTML = `
+        <div class="source-type"><span class="dot" style="background:${src.color}"></span>${src.type}</div>
+        <div class="source-title">${src.title}</div>
+        <div class="source-detail">${src.detail}</div>
+        <div class="source-confidence" style="color:${confColor}">
+          <span>${src.confidence}% match</span>
+          <div class="conf-bar"><div class="conf-fill" style="width:${src.confidence}%;background:${confColor}"></div></div>
+        </div>
+      `;
+      sourcesList.appendChild(card);
+    }, i * 120);
+  });
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// âââ INIT âââ
+renderScenarioButtons();
+loadScenario('breakdown');
+</script>
+</body>
+</html>
